@@ -563,10 +563,20 @@ const parser = {
   }
 };
 
+// TODO(meyer)
+const valueParser = {
+  parse: (text, parsers, opts) => parseValue(text),
+  astFormat: "postcss",
+  hasPragma: () => false,
+  locStart: () => null,
+  locEnd: () => null
+};
+
 // Export as a plugin so we can reuse the same bundle for UMD loading
 module.exports = {
   parsers: {
     css: parser,
+    'css-value': valueParser,
     less: parser,
     scss: parser
   }

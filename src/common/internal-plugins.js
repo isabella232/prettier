@@ -50,6 +50,9 @@ module.exports = [
       get css() {
         return eval("require")("../language-css/parser-postcss").parsers.css;
       },
+      get "css-value"() {
+        return eval("require")("../language-css/parser-postcss").parsers["css-value"];
+      },
       get less() {
         return eval("require")("../language-css/parser-postcss").parsers.css;
       },

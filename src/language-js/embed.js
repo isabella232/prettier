@@ -13,7 +13,7 @@ const {
   utils: { mapDoc, stripTrailingHardline }
 } = require("../doc");
 
-function embed(path, print, textToDoc /*, options */) {
+function embed(path, print, textToDoc, options) {
   const node = path.getValue();
   const parent = path.getParentNode();
   const parentParent = path.getParentNode(1);
@@ -167,6 +167,20 @@ function embed(path, print, textToDoc /*, options */) {
             : concat([literalline, dedentToRoot(printMarkdown(text))]),
           softline
         ]);
+      }
+
+      break;
+    }
+
+    case "JSXAttribute": {
+      if (isJsxstyleJSXAttribute(path)) {
+        const node = path.getValue();
+        const trimmedValue = node.value.value.trim();
+        const doc = textToDoc(trimmedValue, { parser: "css-value" });
+        const printedText = options.printer.print(doc, Object.assign({}, options, { printWidth: 10000 }));
+        // TODO(meyer) probably need to do this at the AST level
+        const result = concat([node.name.name, "=", JSON.stringify(printedText)]);
+        return result;
       }
 
       break;
@@ -441,6 +455,34 @@ function isCssProp(path) {
     parentParent.type === "JSXAttribute" &&
     parentParent.name.type === "JSXIdentifier" &&
     parentParent.name.name === "css"
+  );
+}
+
+const validJsxstyleComponent = {
+  Block: true,
+  InlineBlock: true,
+  Row: true,
+  Col: true
+};
+
+/**
+ * jsxstyle component
+ */
+function isJsxstyleJSXAttribute(path) {
+  const node = path.getValue();
+
+  return (
+    node.name &&
+    node.name.type === "JSXIdentifier" &&
+    typeof node.name.name === "string" &&
+    node.value &&
+    (
+      // typescript, eslint
+      node.value.type === "Literal" || 
+      // babylon
+      node.value.type === "StringLiteral"
+    ) &&
+    typeof node.value.value === "string"
   );
 }
 
